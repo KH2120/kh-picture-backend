@@ -1,0 +1,37 @@
+server:
+  port: 8121
+  servlet:
+    context-path: /api
+spring:
+  application:
+    name: kh-picture-backend
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver # mysql8以上
+    url: jdbc:mysql://localhost:3306/kh_picture
+    username: root
+    password: 2003121
+mybatis-plus:
+  configuration:
+    # MyBatis 配置
+    map-underscore-to-camel-case: false
+    # 仅在开发环境启用日志
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    # 全局配置
+    db-config:
+      logic-delete-field: isDelete # 逻辑删除字段
+      logic-delete-value: 1 # 逻辑删除的值
+      logic-not-delete-value: 0 # 逻辑未删除的值
+
+# 接口文档配置
+knife4j:
+  enable: true
+  openapi:
+    title: 接口文档
+    version: v1.0
+  group:
+      default:
+        group-name: 默认分组
+        api-rule: package
+        api-rule-resources:
+          - com.kh21.khpicturebackend.controller
