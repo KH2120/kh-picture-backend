@@ -1,12 +1,12 @@
 package com.kh21.khpicturebackend.exception;
 
 import lombok.Getter;
-/*
+/**
 * 自定义业务异常
 * */
 @Getter
 public class BusinessException extends RuntimeException {
-    /*
+    /**
      * 状态码
      * */
     private final int code;

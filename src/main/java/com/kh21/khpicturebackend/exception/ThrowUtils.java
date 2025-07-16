@@ -1,10 +1,10 @@
 package com.kh21.khpicturebackend.exception;
 
-/*
+/**
  * 异常处理工具类
  * */
 public class ThrowUtils {
-    /*
+    /**
      * 条件成立则抛出异常
      *
      * @param condition 条件
@@ -16,7 +16,7 @@ public class ThrowUtils {
         }
     }
 
-    /*
+    /**
      * 条件成立则抛出异常
      *
      * @param condition 条件
@@ -28,7 +28,7 @@ public class ThrowUtils {
 
     }
 
-    /*
+    /**
      * 条件成立则抛出异常
      *
      * @param condition 条件

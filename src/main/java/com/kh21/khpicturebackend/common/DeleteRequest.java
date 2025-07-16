@@ -3,7 +3,7 @@ package com.kh21.khpicturebackend.common;
 import lombok.Data;
 
 import java.io.Serializable;
-/*
+/**
 * 通用删除请求
 * */
 
