@@ -5,11 +5,11 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.kh21.khpicturebackend.model.dto.picture.PictureQueryRequest;
 import com.kh21.khpicturebackend.model.dto.picture.PictureReviewRequest;
+import com.kh21.khpicturebackend.model.dto.picture.PictureUploadByBatchRequest;
 import com.kh21.khpicturebackend.model.dto.picture.PictureUploadRequest;
 import com.kh21.khpicturebackend.model.entity.Picture;
 import com.kh21.khpicturebackend.model.entity.User;
 import com.kh21.khpicturebackend.model.vo.PictureVO;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -22,7 +22,7 @@ public interface PictureService extends IService<Picture> {
     /**
      * 图片上传
      *
-     * @param inputSource        文件
+     * @param inputSource          文件
      * @param pictureUploadRequest 图片id
      * @param loginUser            上传用户
      * @return
@@ -64,15 +64,26 @@ public interface PictureService extends IService<Picture> {
 
     /**
      * 图片审核
+     *
      * @param reviewRequest
      * @param loginUser
      */
-    void doPictureReview(PictureReviewRequest reviewRequest,User loginUser);
+    void doPictureReview(PictureReviewRequest reviewRequest, User loginUser);
 
     /**
      * 填充审核状态
+     *
      * @param picture
      * @param user
      */
-    void fillReviewParams(Picture picture,User user);
+    void fillReviewParams(Picture picture, User user);
+
+    /**
+     * 批量抓图和创建
+     *
+     * @param pictureUploadbyBatchRequest
+     * @param loginUser
+     * @return
+     */
+    Integer uploadPictureByBatch(PictureUploadByBatchRequest pictureUploadbyBatchRequest, User loginUser);
 }
