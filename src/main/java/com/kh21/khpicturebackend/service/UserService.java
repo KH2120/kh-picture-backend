@@ -2,6 +2,7 @@ package com.kh21.khpicturebackend.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.kh21.khpicturebackend.model.dto.picture.PictureQueryRequest;
 import com.kh21.khpicturebackend.model.dto.user.UserQueryRequest;
 import com.kh21.khpicturebackend.model.entity.User;
 import com.kh21.khpicturebackend.model.vo.LoginUserVO;
@@ -87,4 +88,14 @@ public interface UserService extends IService<User> {
     Boolean userLogout(HttpServletRequest request);
 
     QueryWrapper<User> getQueryWrapper(UserQueryRequest userQueryRequest);
+
+    /**
+     * 是否为管理员
+     *
+     * @param user
+     * @return
+     */
+    boolean isAdmin(User user);
+
+
 }
