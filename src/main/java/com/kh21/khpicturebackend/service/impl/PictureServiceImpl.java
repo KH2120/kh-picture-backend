@@ -9,7 +9,9 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.kh21.khpicturebackend.exception.BusinessException;
 import com.kh21.khpicturebackend.exception.ErrorCode;
 import com.kh21.khpicturebackend.exception.ThrowUtils;
-import com.kh21.khpicturebackend.manager.FileManager;
+import com.kh21.khpicturebackend.manager.upload.FilePictureUpload;
+import com.kh21.khpicturebackend.manager.upload.PictureUploadTemplate;
+import com.kh21.khpicturebackend.manager.upload.UrlPicturreUpload;
 import com.kh21.khpicturebackend.mapper.PictureMapper;
 import com.kh21.khpicturebackend.model.dto.file.UploadPictureResult;
 import com.kh21.khpicturebackend.model.dto.picture.PictureQueryRequest;
@@ -26,7 +28,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -47,12 +48,16 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
         implements PictureService {
 
     @Resource
-    FileManager fileManager;
+    FilePictureUpload filePictureUpload;
+    @Resource
+    UrlPicturreUpload urlPicturreUpload;
+
     @Autowired
     UserService userService;
 
     @Override
-    public PictureVO uploadPicture(MultipartFile multipartFile, PictureUploadRequest pictureUploadRequest, User loginUser) {
+    public PictureVO uploadPicture(Object inputSource, PictureUploadRequest pictureUploadRequest, User loginUser) {
+        ThrowUtils.throwIf(inputSource == null, ErrorCode.PARAMS_ERROR, "图片为空");
         // 校验参数
         ThrowUtils.throwIf(loginUser == null, ErrorCode.NO_AUTH_ERROR);
         // 判断是新增还是更新
@@ -72,7 +77,12 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
         // 自动过审
         // 上传图片
         String uploadPathPrefix = String.format("public/%s", loginUser.getId());
-        UploadPictureResult uploadPictureResult = fileManager.uploadPicture(multipartFile, uploadPathPrefix);
+        // 根据类型区别上传
+        PictureUploadTemplate pictureUploadTemplate = filePictureUpload;
+        if (inputSource instanceof String) {
+            pictureUploadTemplate = urlPicturreUpload;
+        }
+        UploadPictureResult uploadPictureResult = pictureUploadTemplate.uploadPicture(inputSource, uploadPathPrefix);
 
         // 构造要入库的图片信息
         Picture picture = new Picture();

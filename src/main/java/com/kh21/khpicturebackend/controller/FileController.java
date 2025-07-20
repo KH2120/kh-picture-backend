@@ -6,7 +6,7 @@ import com.kh21.khpicturebackend.common.ResultUtils;
 import com.kh21.khpicturebackend.constant.UserConstant;
 import com.kh21.khpicturebackend.exception.BusinessException;
 import com.kh21.khpicturebackend.exception.ErrorCode;
-import com.kh21.khpicturebackend.manager.CosMananger;
+import com.kh21.khpicturebackend.manager.CosManager;
 import com.qcloud.cos.model.COSObject;
 import com.qcloud.cos.model.COSObjectInputStream;
 import com.qcloud.cos.utils.IOUtils;
@@ -25,7 +25,7 @@ import java.io.IOException;
 public class FileController {
     @Resource
 
-    private CosMananger cosMananger;
+    private CosManager cosManager;
 
     /**
      * 测试文件上传
@@ -44,7 +44,7 @@ public class FileController {
 //            上传文件
             file = File.createTempFile(filepath, null);
             multipartFile.transferTo(file);
-            cosMananger.putObject(filepath, file);
+            cosManager.putObject(filepath, file);
             //返回地址
             return ResultUtils.success(filepath);
         } catch (Exception e) {
@@ -67,7 +67,7 @@ public class FileController {
     public void testDownloadFile(String filepath, HttpServletResponse response) throws IOException {
         COSObjectInputStream objectContent = null;
         try {
-            COSObject cosObject = cosMananger.getObecjt(filepath);
+            COSObject cosObject = cosManager.getObecjt(filepath);
             objectContent = cosObject.getObjectContent();
             byte[] bytes = IOUtils.toByteArray(objectContent);
 

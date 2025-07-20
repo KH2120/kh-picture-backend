@@ -13,7 +13,7 @@ import javax.annotation.Resource;
 import java.io.File;
 
 @Component
-public class CosMananger {
+public class CosManager {
     @Resource
     private CosClientConfig cosClientConfig;
     @Resource
@@ -38,7 +38,7 @@ public class CosMananger {
      * @param file 文件
      * @return
      */
-    public PutObjectResult puyPictureObject(String key, File file) {
+    public PutObjectResult putPictureObject(String key, File file) {
         PutObjectRequest putObjectRequest = new PutObjectRequest(cosClientConfig.getBucket(), key, file);
 
         PicOperations picOperations = new PicOperations();
