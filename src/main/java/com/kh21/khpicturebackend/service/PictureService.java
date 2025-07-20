@@ -4,11 +4,11 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.kh21.khpicturebackend.model.dto.picture.PictureQueryRequest;
+import com.kh21.khpicturebackend.model.dto.picture.PictureReviewRequest;
 import com.kh21.khpicturebackend.model.dto.picture.PictureUploadRequest;
 import com.kh21.khpicturebackend.model.entity.Picture;
 import com.kh21.khpicturebackend.model.entity.User;
 import com.kh21.khpicturebackend.model.vo.PictureVO;
-import com.kh21.khpicturebackend.model.vo.UserVO;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
@@ -61,4 +61,18 @@ public interface PictureService extends IService<Picture> {
      * @param picture
      */
     void validPicture(Picture picture);
+
+    /**
+     * 图片审核
+     * @param reviewRequest
+     * @param loginUser
+     */
+    void doPictureReview(PictureReviewRequest reviewRequest,User loginUser);
+
+    /**
+     * 填充审核状态
+     * @param picture
+     * @param user
+     */
+    void fillReviewParams(Picture picture,User user);
 }
