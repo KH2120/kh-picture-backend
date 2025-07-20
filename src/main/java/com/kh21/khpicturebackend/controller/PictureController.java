@@ -1,7 +1,10 @@
 package com.kh21.khpicturebackend.controller;
 
+import cn.hutool.core.util.RandomUtil;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import com.kh21.khpicturebackend.annotation.AuthCheck;
 import com.kh21.khpicturebackend.common.BaseResponse;
 import com.kh21.khpicturebackend.common.DeleteRequest;
@@ -20,6 +23,10 @@ import com.kh21.khpicturebackend.service.PictureService;
 import com.kh21.khpicturebackend.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.util.DigestUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -28,6 +35,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @RestController
@@ -37,6 +45,8 @@ public class PictureController {
     private PictureService pictureService;
     @Resource
     private UserService userService;
+    @Autowired
+    StringRedisTemplate redisTemplate;
 
     /**
      * 图片上传
@@ -258,6 +268,7 @@ public class PictureController {
 
     /**
      * 图片抓取并创建
+     *
      * @param pictureUploadByBatchRequest
      * @param request
      * @return
@@ -272,6 +283,65 @@ public class PictureController {
         User loginUser = userService.getLoginUser(request);
         int uploadCount = pictureService.uploadPictureByBatch(pictureUploadByBatchRequest, loginUser);
         return ResultUtils.success(uploadCount);
+    }
+
+    private final Cache<String, String> LOCAL_CACHE =
+            Caffeine.newBuilder().initialCapacity(1024)
+                    .maximumSize(10000L)
+                    // 缓存 5 分钟移除
+                    .expireAfterWrite(5L, TimeUnit.MINUTES)
+                    .build();
+
+    /**
+     * 获取图片封装类（缓存）
+     *
+     * @param queryRequest
+     * @param request
+     * @return
+     */
+    @PostMapping("/list/page/vo/cache")
+    public BaseResponse<Page<PictureVO>> listPictureVOByPageWithCache(@RequestBody PictureQueryRequest queryRequest, HttpServletRequest request) {
+        // 查询
+        long current = queryRequest.getCurrent();
+        long size = queryRequest.getPageSize();
+//        防止爬虫
+        ThrowUtils.throwIf(size > 20, ErrorCode.PARAMS_ERROR);
+//        用户只允许获取已过审的图片
+        queryRequest.setReviewStatus(PicturereviewStatusEnum.PASS.getValue());
+
+        // 构建缓存key
+        String queryCondition = JSONUtil.toJsonStr(queryRequest);
+        String hashKey = DigestUtils.md5DigestAsHex(queryCondition.getBytes());
+        String cacheKEy = "khpicture:listPictureVOByPage" + hashKey;
+
+        // 1. 本地查询
+        String cachedValue = LOCAL_CACHE.getIfPresent(cacheKEy);
+        if (cachedValue != null) {
+            Page<PictureVO> pictureVOPage = JSONUtil.toBean(cachedValue, Page.class);
+            return ResultUtils.success(pictureVOPage);
+        }
+
+
+        ValueOperations<String, String> valueOperations = redisTemplate.opsForValue();
+        // 查询以缓存数据
+        cachedValue = valueOperations.get(cacheKEy);
+        // 查询是否有缓存，有则返回
+        if (cachedValue != null) {
+            Page<PictureVO> pictureVOPage = JSONUtil.toBean(cachedValue, Page.class);
+            return ResultUtils.success(pictureVOPage);
+        }
+
+
+        Page<Picture> picturePage = pictureService.page(new Page<>(current, size), pictureService.getQueryWrapper(queryRequest));
+        Page<PictureVO> pictureVOPage = pictureService.getPictureVOPage(picturePage, request);
+        String cacheValue = JSONUtil.toJsonStr(pictureService.getPictureVOPage(picturePage, request));
+        int cacheExpireTime = 300 + RandomUtil.randomInt(0, 300);
+
+        LOCAL_CACHE.put(cacheKEy, cacheValue);
+
+        valueOperations.set(cacheKEy, cacheValue, cacheExpireTime, TimeUnit.SECONDS);
+        // 返回
+        return ResultUtils.success(pictureVOPage);
     }
 
 

@@ -13,6 +13,11 @@ spring:
   servlet:
     multipart:
       max-file-size: 10MB
+  redis:
+    database: 0
+    host: 127.0.0.1
+    port: 6379
+    timeout: 5000
 mybatis-plus:
   configuration:
     # MyBatis 配置
@@ -33,8 +38,8 @@ knife4j:
     title: 接口文档
     version: v1.0
   group:
-      default:
-        group-name: 默认分组
-        api-rule: package
-        api-rule-resources:
-          - com.kh21.khpicturebackend.controller
+    default:
+      group-name: 默认分组
+      api-rule: package
+      api-rule-resources:
+        - com.kh21.khpicturebackend.controller
