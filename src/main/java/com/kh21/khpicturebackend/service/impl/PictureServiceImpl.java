@@ -40,10 +40,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -270,7 +267,14 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
         List<PictureVO> pictureVOList = pictureList.stream().map(PictureVO::objToVO).collect(Collectors.toList());
 
         Set<Long> idSet = pictureList.stream().map(Picture::getUserId).collect(Collectors.toSet());
-        Map<Long, User> userIdUserListMap = userService.listByIds(idSet).stream().collect(Collectors.toMap(User::getId, user -> user, (existing, replacement) -> existing));
+        Map<Long, User> userIdUserListMap;
+        if (!idSet.isEmpty()) { // 只有当idSet非空时才查询
+            userIdUserListMap = userService.listByIds(idSet).stream()
+                    .collect(Collectors.toMap(User::getId, user -> user, (existing, replacement) -> existing));
+        } else {
+            userIdUserListMap = new HashMap<>();
+        }
+//        Map<Long, User> userIdUserListMap = userService.listByIds(idSet).stream().collect(Collectors.toMap(User::getId, user -> user, (existing, replacement) -> existing));
         pictureVOList.forEach(pictureVO -> {
             Long userId = pictureVO.getUserId();
             User user = null;
