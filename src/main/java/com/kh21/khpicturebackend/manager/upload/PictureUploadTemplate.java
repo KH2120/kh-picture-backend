@@ -60,8 +60,9 @@ public abstract class PictureUploadTemplate {
             ProcessResults processResults = putObjectResult.getCiUploadResult().getProcessResults();
             List<CIObject> objectList = processResults.getObjectList();
             if (objectList != null) {
-                CIObject ciObject = objectList.get(0);
-                return buildResult(originalFilename, ciObject);
+                CIObject compressedObj = objectList.get(0);
+                CIObject thumbnailObj = objectList.get(1);
+                return buildResult(originalFilename, compressedObj, thumbnailObj);
             }
 
 
@@ -82,22 +83,24 @@ public abstract class PictureUploadTemplate {
      * 封装返回结果
      *
      * @param originalFilename
-     * @param ciObject
+     * @param compressedObj
+     * @param thumbnailObj
      * @return
      */
-    private UploadPictureResult buildResult(String originalFilename, CIObject ciObject) {
+    private UploadPictureResult buildResult(String originalFilename, CIObject compressedObj, CIObject thumbnailObj) {
         UploadPictureResult uploadPictureResult = new UploadPictureResult();
 
-        Integer picWidth = ciObject.getWidth();
-        Integer picHeight = ciObject.getHeight();
+        Integer picWidth = compressedObj.getWidth();
+        Integer picHeight = compressedObj.getHeight();
         double scale = NumberUtil.round(picWidth * 1.0 / picHeight, 2).doubleValue();
-        uploadPictureResult.setUrl(cosClientConfig.getHost() + "/" + ciObject.getKey());
+        uploadPictureResult.setUrl(cosClientConfig.getHost() + "/" + compressedObj.getKey());
         uploadPictureResult.setPicName(originalFilename);
         uploadPictureResult.setPicWidth(picWidth);
         uploadPictureResult.setPicHeight(picHeight);
         uploadPictureResult.setPicScale(scale);
-        uploadPictureResult.setPicFormat(ciObject.getFormat());
-        uploadPictureResult.setPicSize(ciObject.getSize().longValue());
+        uploadPictureResult.setPicFormat(compressedObj.getFormat());
+        uploadPictureResult.setPicSize(compressedObj.getSize().longValue());
+        uploadPictureResult.setThumbnailUrl(cosClientConfig.getHost() + "/" + thumbnailObj.getKey());
         return uploadPictureResult;
     }
 

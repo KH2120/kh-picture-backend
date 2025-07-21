@@ -8,6 +8,7 @@ import com.qcloud.cos.model.GetObjectRequest;
 import com.qcloud.cos.model.PutObjectRequest;
 import com.qcloud.cos.model.PutObjectResult;
 import com.qcloud.cos.model.ciModel.persistence.PicOperations;
+import org.jsoup.internal.StringUtil;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -45,6 +46,7 @@ public class CosManager {
         PicOperations picOperations = new PicOperations();
         // 返回图片信息
         picOperations.setIsPicInfo(1);
+        // 处理规则
         ArrayList<PicOperations.Rule> rules = new ArrayList<>();
 
         // 图片压缩
@@ -54,6 +56,16 @@ public class CosManager {
         compressRule.setBucket(cosClientConfig.getBucket());
         compressRule.setFileId(webpKey);
         rules.add(compressRule);
+
+        // 图片加载优化
+        PicOperations.Rule thumbRule = new PicOperations.Rule();
+        thumbRule.setBucket(cosClientConfig.getBucket());
+        String thumbKey = FileUtil.mainName(key) + "_thumbnail." + FileUtil.getSuffix(key);
+        thumbRule.setFileId(thumbKey);
+        thumbRule.setRule(String.format("imageMogr2/thumbnail/%sx%s", 128, 128));
+        rules.add(thumbRule);
+
+
         // 返回
         picOperations.setRules(rules);
         putObjectRequest.setPicOperations(picOperations);
