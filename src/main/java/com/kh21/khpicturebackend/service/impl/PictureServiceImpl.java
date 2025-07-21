@@ -342,6 +342,21 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
     }
 
     @Override
+    public void fillReviewParamsPlus(Picture picture, User user) {
+        Long spaceId = picture.getSpaceId();
+        Space space = spaceService.getById(spaceId);
+        if (space.getUserId().equals(user.getId())) {
+            picture.setReviewStatus(PicturereviewStatusEnum.PASS.getValue());
+            picture.setReviewerId(user.getId());
+            picture.setReviewMessage("用户私密空间");
+            picture.setReviewTime(new Date());
+
+        } else {
+            throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
+        }
+    }
+
+    @Override
     public Integer uploadPictureByBatch(PictureUploadByBatchRequest pictureUploadByBatchRequest, User loginUser) {
         String searchText = pictureUploadByBatchRequest.getSearchText();
         Integer count = pictureUploadByBatchRequest.getCount();

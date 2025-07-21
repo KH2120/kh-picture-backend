@@ -75,6 +75,8 @@ public interface PictureService extends IService<Picture> {
      */
     void fillReviewParams(Picture picture, User user);
 
+    void fillReviewParamsPlus(Picture picture, User user);
+
     /**
      * 批量抓图和创建
      *
