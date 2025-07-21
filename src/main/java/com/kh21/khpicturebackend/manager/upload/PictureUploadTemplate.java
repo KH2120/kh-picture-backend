@@ -10,13 +10,16 @@ import com.kh21.khpicturebackend.exception.ErrorCode;
 import com.kh21.khpicturebackend.manager.CosManager;
 import com.kh21.khpicturebackend.model.dto.file.UploadPictureResult;
 import com.qcloud.cos.model.PutObjectResult;
+import com.qcloud.cos.model.ciModel.persistence.CIObject;
 import com.qcloud.cos.model.ciModel.persistence.ImageInfo;
+import com.qcloud.cos.model.ciModel.persistence.ProcessResults;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.annotation.Resource;
 import java.io.File;
 import java.io.IOException;
 import java.util.Date;
+import java.util.List;
 
 @Slf4j
 public abstract class PictureUploadTemplate {
@@ -49,11 +52,19 @@ public abstract class PictureUploadTemplate {
             // 处理文件来源（url，本地）
             processFile(inputSource, file);
             // 4. 上传图片到对象存储
-            log.error("cosManager => {}",cosManager);
+            log.error("cosManager => {}", cosManager);
 
             PutObjectResult putObjectResult = cosManager.putPictureObject(uploadPath, file);
 
             ImageInfo imageInfo = putObjectResult.getCiUploadResult().getOriginalInfo().getImageInfo();
+            ProcessResults processResults = putObjectResult.getCiUploadResult().getProcessResults();
+            List<CIObject> objectList = processResults.getObjectList();
+            if (objectList != null) {
+                CIObject ciObject = objectList.get(0);
+                return buildResult(originalFilename, ciObject);
+            }
+
+
             // 5. 封装返回结果
             return buildResult(uploadPath, originalFilename, file, imageInfo);
         } catch (Exception e) {
@@ -65,6 +76,29 @@ public abstract class PictureUploadTemplate {
         }
 
 
+    }
+
+    /**
+     * 封装返回结果
+     *
+     * @param originalFilename
+     * @param ciObject
+     * @return
+     */
+    private UploadPictureResult buildResult(String originalFilename, CIObject ciObject) {
+        UploadPictureResult uploadPictureResult = new UploadPictureResult();
+
+        Integer picWidth = ciObject.getWidth();
+        Integer picHeight = ciObject.getHeight();
+        double scale = NumberUtil.round(picWidth * 1.0 / picHeight, 2).doubleValue();
+        uploadPictureResult.setUrl(cosClientConfig.getHost() + "/" + ciObject.getKey());
+        uploadPictureResult.setPicName(originalFilename);
+        uploadPictureResult.setPicWidth(picWidth);
+        uploadPictureResult.setPicHeight(picHeight);
+        uploadPictureResult.setPicScale(scale);
+        uploadPictureResult.setPicFormat(ciObject.getFormat());
+        uploadPictureResult.setPicSize(ciObject.getSize().longValue());
+        return uploadPictureResult;
     }
 
     /**
