@@ -3,10 +3,7 @@ package com.kh21.khpicturebackend.service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.kh21.khpicturebackend.model.dto.picture.PictureQueryRequest;
-import com.kh21.khpicturebackend.model.dto.picture.PictureReviewRequest;
-import com.kh21.khpicturebackend.model.dto.picture.PictureUploadByBatchRequest;
-import com.kh21.khpicturebackend.model.dto.picture.PictureUploadRequest;
+import com.kh21.khpicturebackend.model.dto.picture.*;
 import com.kh21.khpicturebackend.model.entity.Picture;
 import com.kh21.khpicturebackend.model.entity.User;
 import com.kh21.khpicturebackend.model.vo.PictureVO;
@@ -89,7 +86,32 @@ public interface PictureService extends IService<Picture> {
 
     /**
      * 删除图片
+     *
      * @param oldPic
      */
     public void clearPictureFile(Picture oldPic);
+
+    /**
+     * 检查空间图片权限
+     *
+     * @param loginUser
+     * @param picture
+     */
+    void checkPictureAuth(User loginUser, Picture picture);
+
+    /**
+     * 删除托
+     *
+     * @param pictureId
+     * @param loginUser
+     */
+    void deletePicture(Long pictureId, User loginUser);
+
+    /**
+     * 编辑图片
+     *
+     * @param pictureEditRequest
+     * @param loginUser
+     */
+    void editPicture(PictureEditRequest pictureEditRequest, User loginUser);
 }
