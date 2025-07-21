@@ -9,6 +9,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.kh21.khpicturebackend.exception.BusinessException;
 import com.kh21.khpicturebackend.exception.ErrorCode;
 import com.kh21.khpicturebackend.exception.ThrowUtils;
+import com.kh21.khpicturebackend.manager.CosManager;
 import com.kh21.khpicturebackend.manager.upload.FilePictureUpload;
 import com.kh21.khpicturebackend.manager.upload.PictureUploadTemplate;
 import com.kh21.khpicturebackend.manager.upload.UrlPicturreUpload;
@@ -32,6 +33,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -60,6 +62,9 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
 
     @Autowired
     UserService userService;
+
+    @Resource
+    CosManager cosManager;
 
     @Override
     public PictureVO uploadPicture(Object inputSource, PictureUploadRequest pictureUploadRequest, User loginUser) {
@@ -324,6 +329,23 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
             }
         }
         return uploadCount;
+    }
+
+    @Async
+    @Override
+    public void clearPictureFile(Picture oldPic) {
+        String url = oldPic.getUrl();
+        Long count = this.lambdaQuery().eq(Picture::getUrl, url).count();
+        // 大于1 不清
+        if (count > 1) {
+            return;
+        }
+        // FIXME 这里url包括了域名，只需要传key（存储路径）即可
+        cosManager.deleteObject(url);
+        String thumbnailUrl = oldPic.getThumbnailUrl();
+        if (StrUtil.isNotBlank(thumbnailUrl)) {
+            cosManager.deleteObject(thumbnailUrl);
+        }
     }
 
 }
