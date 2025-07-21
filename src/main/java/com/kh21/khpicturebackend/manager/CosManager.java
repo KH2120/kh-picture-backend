@@ -87,10 +87,12 @@ public class CosManager {
     /**
      * 删除对象
      *
-     * @param key
+     * @param url
      * @throws CosClientException
      */
-    public void deleteObject(String key) throws CosClientException {
+    public void deleteObject(String url) throws CosClientException {
+        String host = cosClientConfig.getHost();
+        String key = url.replace(host, "");
         cosClient.deleteObject(cosClientConfig.getBucket(), key);
     }
 }
