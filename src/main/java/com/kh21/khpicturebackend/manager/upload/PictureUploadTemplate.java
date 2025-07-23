@@ -62,7 +62,7 @@ public abstract class PictureUploadTemplate {
             if (objectList != null) {
                 CIObject compressedObj = objectList.get(0);
                 CIObject thumbnailObj = objectList.get(1);
-                return buildResult(originalFilename, compressedObj, thumbnailObj);
+                return buildResult(originalFilename, compressedObj, thumbnailObj, imageInfo);
             }
 
 
@@ -85,9 +85,10 @@ public abstract class PictureUploadTemplate {
      * @param originalFilename
      * @param compressedObj
      * @param thumbnailObj
+     * @param imageInfo
      * @return
      */
-    private UploadPictureResult buildResult(String originalFilename, CIObject compressedObj, CIObject thumbnailObj) {
+    private UploadPictureResult buildResult(String originalFilename, CIObject compressedObj, CIObject thumbnailObj, ImageInfo imageInfo) {
         UploadPictureResult uploadPictureResult = new UploadPictureResult();
 
         Integer picWidth = compressedObj.getWidth();
@@ -101,6 +102,7 @@ public abstract class PictureUploadTemplate {
         uploadPictureResult.setPicFormat(compressedObj.getFormat());
         uploadPictureResult.setPicSize(compressedObj.getSize().longValue());
         uploadPictureResult.setThumbnailUrl(cosClientConfig.getHost() + "/" + thumbnailObj.getKey());
+        uploadPictureResult.setPicColor(imageInfo.getAve());
         return uploadPictureResult;
     }
 
@@ -125,6 +127,7 @@ public abstract class PictureUploadTemplate {
         double scale = NumberUtil.round(picWidth * 1.0 / picHeight, 2).doubleValue();
         uploadPictureResult.setPicScale(scale);
         uploadPictureResult.setPicFormat(imageInfo.getFormat());
+        uploadPictureResult.setPicColor(imageInfo.getAve());
         return uploadPictureResult;
     }
 

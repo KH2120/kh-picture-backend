@@ -9,6 +9,7 @@ import com.kh21.khpicturebackend.model.entity.User;
 import com.kh21.khpicturebackend.model.vo.PictureVO;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 /**
  * @author KH2120
@@ -116,4 +117,14 @@ public interface PictureService extends IService<Picture> {
      * @param loginUser
      */
     void editPicture(PictureEditRequest pictureEditRequest, User loginUser);
+
+    /**
+     * 通过颜色找图片
+     *
+     * @param spaceId
+     * @param picColor
+     * @param loginUser
+     * @return
+     */
+    List<PictureVO> searchPictureVOByColor(Long spaceId, String picColor, User loginUser);
 }

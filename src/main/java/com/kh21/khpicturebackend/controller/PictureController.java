@@ -350,6 +350,21 @@ public class PictureController {
         return ResultUtils.success(resultList);
     }
 
+    /**
+     * 颜色搜图
+     *
+     * @param searchPictureByColorRequest
+     * @param request
+     * @return
+     */
+    @PostMapping("/search/color")
+    public BaseResponse<List<PictureVO>> searchPictureByColor(@RequestBody SearchPictureByColorRequest searchPictureByColorRequest, HttpServletRequest request) {
+        ThrowUtils.throwIf(searchPictureByColorRequest == null, ErrorCode.PARAMS_ERROR);
+        String picColor = searchPictureByColorRequest.getPicColor();
+        Long spaceId = searchPictureByColorRequest.getSpaceId();
+        List<PictureVO> pictureVOList = pictureService.searchPictureVOByColor(spaceId, picColor, userService.getLoginUser(request));
+        return ResultUtils.success(pictureVOList);
+    }
 
 
 }

@@ -26,6 +26,7 @@ import com.kh21.khpicturebackend.model.vo.UserVO;
 import com.kh21.khpicturebackend.service.PictureService;
 import com.kh21.khpicturebackend.service.SpaceService;
 import com.kh21.khpicturebackend.service.UserService;
+import com.kh21.khpicturebackend.utils.ColorSimilarUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -39,8 +40,10 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.awt.*;
 import java.io.IOException;
 import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -502,6 +505,42 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
         // 操作数据
         boolean updated = this.updateById(picture);
         ThrowUtils.throwIf(!updated, ErrorCode.OPERATION_ERROR);
+    }
+
+    @Override
+    public List<PictureVO> searchPictureVOByColor(Long spaceId, String picColor, User loginUser) {
+        // 参数校验
+        ThrowUtils.throwIf(spaceId == null || StrUtil.isBlank(picColor), ErrorCode.PARAMS_ERROR);
+        ThrowUtils.throwIf(loginUser == null, ErrorCode.NO_AUTH_ERROR);
+        // 检验空间权限
+        Space space = spaceService.getById(spaceId);
+        ThrowUtils.throwIf(space == null, ErrorCode.NOT_FOUND_ERROR, "空间不存在");
+        if (!space.getUserId().equals(loginUser.getId())) {
+            throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "空间权限不足");
+        }
+        // 查询空间下所有图片（必须有主色调）
+        List<Picture> pictureList = this.lambdaQuery().eq(Picture::getSpaceId, spaceId).isNotNull(Picture::getPicColor).list();
+        // 没有返回空列表
+        if (CollUtil.isEmpty(pictureList)) {
+            return Collections.emptyList();
+        }
+        // 将目标颜色转为Color对象
+        Color target = Color.decode(picColor);
+        // 计算相似度并排序
+        List<Picture> collect = pictureList
+                .stream()
+                .sorted(Comparator.comparingDouble(picture -> {
+                    String hexColor = picture.getPicColor();
+                    if (StrUtil.isBlank(hexColor)) {
+                        return Double.MAX_VALUE;
+                    }
+                    Color pictureColor = Color.decode(hexColor);
+                    return -ColorSimilarUtils.calculateSimilarity(target, pictureColor);
+                }))
+                .limit(12)
+                .collect(Collectors.toList());
+        // 转成vo
+        return collect.stream().map(PictureVO::objToVO).collect(Collectors.toList());
     }
 
 }
