@@ -36,6 +36,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import javax.swing.text.html.HTML;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -364,6 +365,20 @@ public class PictureController {
         Long spaceId = searchPictureByColorRequest.getSpaceId();
         List<PictureVO> pictureVOList = pictureService.searchPictureVOByColor(spaceId, picColor, userService.getLoginUser(request));
         return ResultUtils.success(pictureVOList);
+    }
+
+    /**
+     * 批量修改
+     *
+     * @param editByBatchRequest
+     * @param request
+     * @return
+     */
+    @PostMapping("/edit/batch")
+    public BaseResponse<Boolean> editPictureByBatch(@RequestBody PictureEditByBatchRequest editByBatchRequest, HttpServletRequest request) {
+        ThrowUtils.throwIf(editByBatchRequest == null, ErrorCode.PARAMS_ERROR);
+        pictureService.editPictureByBatch(editByBatchRequest, userService.getLoginUser(request));
+        return ResultUtils.success(true);
     }
 
 
