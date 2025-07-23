@@ -3,6 +3,7 @@ package com.kh21.khpicturebackend.service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.kh21.khpicturebackend.api.aliyunai.model.CreateOutPaintingTaskResponse;
 import com.kh21.khpicturebackend.model.dto.picture.*;
 import com.kh21.khpicturebackend.model.entity.Picture;
 import com.kh21.khpicturebackend.model.entity.User;
@@ -135,4 +136,13 @@ public interface PictureService extends IService<Picture> {
      * @param loginuser
      */
     void editPictureByBatch(PictureEditByBatchRequest pictureEditByBatchRequest, User loginuser);
+
+    /**
+     * ai生图
+     *
+     * @param createPictureOutPaintingTaskRequest
+     * @param loginUser
+     * @return
+     */
+    CreateOutPaintingTaskResponse createOutPaintingTask(CreatePictureOutPaintingTaskRequest createPictureOutPaintingTaskRequest, User loginUser);
 }

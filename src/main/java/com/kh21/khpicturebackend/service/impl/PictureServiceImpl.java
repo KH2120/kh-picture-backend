@@ -7,6 +7,9 @@ import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.kh21.khpicturebackend.api.aliyunai.AliYunAiApi;
+import com.kh21.khpicturebackend.api.aliyunai.model.CreateOutPaintingTaskRequest;
+import com.kh21.khpicturebackend.api.aliyunai.model.CreateOutPaintingTaskResponse;
 import com.kh21.khpicturebackend.exception.BusinessException;
 import com.kh21.khpicturebackend.exception.ErrorCode;
 import com.kh21.khpicturebackend.exception.ThrowUtils;
@@ -70,6 +73,9 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
 
     @Resource
     TransactionTemplate transactionTemplate;
+
+    @Resource
+    AliYunAiApi aliYunAiApi;
     @Resource
     CosManager cosManager;
 
@@ -582,6 +588,25 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
         // 批量更新
         boolean updated = this.updateBatchById(list);
         ThrowUtils.throwIf(!updated, ErrorCode.OPERATION_ERROR);
+    }
+
+    @Override
+    public CreateOutPaintingTaskResponse createOutPaintingTask(CreatePictureOutPaintingTaskRequest createPictureOutPaintingTaskRequest, User loginUser) {
+        Long pictureId = createPictureOutPaintingTaskRequest.getPictureId();
+
+        Picture picture = Optional.ofNullable(this.getById(pictureId)).orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND_ERROR));
+
+        // 校验权限
+        checkPictureAuth(loginUser, picture);
+
+        // 构造请求参数
+        CreateOutPaintingTaskRequest request = new CreateOutPaintingTaskRequest();
+        CreateOutPaintingTaskRequest.Input input = new CreateOutPaintingTaskRequest.Input();
+        input.setImageUrl(picture.getUrl());
+        request.setInput(input);
+        BeanUtils.copyProperties(createPictureOutPaintingTaskRequest, request);
+        // 创建任务
+        return aliYunAiApi.createOutPaintingTask(request);
     }
 
     /**
