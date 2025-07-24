@@ -118,23 +118,35 @@ public class SpaceAnalyzeServiceImpl extends ServiceImpl<SpaceMapper, Space>
     }
 
     @Override
-    public List<SpaceCategoryAnalyzeResponse> getSpaceCategoryAnalyzeResponse(SpaceCategoryAnalyzeRequest request, User loginUser) {
-        ThrowUtils.throwIf(request == null, ErrorCode.PARAMS_ERROR);
-        checkSpaceAnalyzeAuth(request, loginUser);
-        QueryWrapper<Picture> queryWrapper = new QueryWrapper<>();
-        fillSpaceAnalyzeParam(request, queryWrapper);
-        queryWrapper.select(
-                "category AS category",
-                "COUNT AS count",
-                "SUM(picSize) AS totalSize");
+    public List<SpaceCategoryAnalyzeResponse> getSpaceCategoryAnalyze(SpaceCategoryAnalyzeRequest spaceCategoryAnalyzeRequest, User loginUser) {
+        ThrowUtils.throwIf(spaceCategoryAnalyzeRequest == null, ErrorCode.PARAMS_ERROR);
 
-        return pictureService.getBaseMapper().selectMaps(queryWrapper).stream().map(result -> {
-            String category = result.get("category") != null ? (String) result.get("category") : "未分类";
-            Long count = ((Number) result.get("count")).longValue();
-            Long totalSize = ((Number) result.get("totalSize")).longValue();
-            return new SpaceCategoryAnalyzeResponse(category, count, totalSize);
-        }).collect(Collectors.toList());
+        // 检查权限
+        checkSpaceAnalyzeAuth(spaceCategoryAnalyzeRequest, loginUser);
+
+        // 构造查询条件
+        QueryWrapper<Picture> queryWrapper = new QueryWrapper<>();
+        // 根据分析范围补充查询条件
+        fillSpaceAnalyzeParam(spaceCategoryAnalyzeRequest, queryWrapper);
+
+        // 使用 MyBatis-Plus 分组查询
+        queryWrapper.select("category AS category",
+                        "COUNT(*) AS count",
+                        "SUM(picSize) AS totalSize")
+                .groupBy("category");
+
+        // 查询并转换结果
+        return pictureService.getBaseMapper().selectMaps(queryWrapper)
+                .stream()
+                .map(result -> {
+                    String category = result.get("category") != null ? result.get("category").toString() : "未分类";
+                    Long count = ((Number) result.get("count")).longValue();
+                    Long totalSize = ((Number) result.get("totalSize")).longValue();
+                    return new SpaceCategoryAnalyzeResponse(category, count, totalSize);
+                })
+                .collect(Collectors.toList());
     }
+
 
     @Override
     public List<SpaceTagsAnalyzeResponse> getSpaceTagsAnalyzeResponse(SpaceTagsAnalyzeRequest request, User loginUser) {
@@ -197,13 +209,22 @@ public class SpaceAnalyzeServiceImpl extends ServiceImpl<SpaceMapper, Space>
     }
 
     @Override
-    public List<Space> getSpaceRankAnalyze(SpaceRankAnalyzeRequest rankAnalyzeRequest, User loginUser) {
-        ThrowUtils.throwIf(rankAnalyzeRequest == null, ErrorCode.PARAMS_ERROR);
+    public List<Space> getSpaceRankAnalyze(SpaceRankAnalyzeRequest spaceRankAnalyzeRequest, User loginUser) {
+        ThrowUtils.throwIf(spaceRankAnalyzeRequest == null, ErrorCode.PARAMS_ERROR);
+
+// 仅管理员可查看空间排行
         ThrowUtils.throwIf(!userService.isAdmin(loginUser), ErrorCode.NO_AUTH_ERROR, "无权查看空间排行");
+
+// 构造查询条件
         QueryWrapper<Space> queryWrapper = new QueryWrapper<>();
-        queryWrapper.select("id", "spaceName", "usedId", "totalSize").orderByDesc("totalSize").last("LIMIT" + rankAnalyzeRequest.getTopN());
+        queryWrapper.select("id", "spaceName", "userId", "totalSize")
+                .orderByDesc("totalSize")
+                .last("LIMIT " + spaceRankAnalyzeRequest.getTopN()); // 取前 N 名
+
+// 查询结果
         return spaceService.list(queryWrapper);
     }
+
 
     @Override
     public List<SpaceSizeAnalyzeResponse> getSpaceSizeAnalyze(SpaceSizeAnalyzeRequest spaceSizeAnalyzeRequest, User loginUser) {

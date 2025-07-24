@@ -29,7 +29,7 @@ public interface SpaceAnalyzeService extends IService<Space> {
      * @param loginUser
      * @return
      */
-    List<SpaceCategoryAnalyzeResponse> getSpaceCategoryAnalyzeResponse(SpaceCategoryAnalyzeRequest request, User loginUser);
+    List<SpaceCategoryAnalyzeResponse> getSpaceCategoryAnalyze(SpaceCategoryAnalyzeRequest request, User loginUser);
 
     /**
      * 标签分析

@@ -57,7 +57,7 @@ public class SpaceAnalyzeController {
     public BaseResponse<List<SpaceCategoryAnalyzeResponse>> categoryAnalyze(@RequestBody SpaceCategoryAnalyzeRequest analyzeRequest, HttpServletRequest request) {
         ThrowUtils.throwIf(analyzeRequest == null, ErrorCode.PARAMS_ERROR);
         User loginUser = userService.getLoginUser(request);
-        List<SpaceCategoryAnalyzeResponse> list = spaceAnalyzeService.getSpaceCategoryAnalyzeResponse(analyzeRequest, loginUser);
+        List<SpaceCategoryAnalyzeResponse> list = spaceAnalyzeService.getSpaceCategoryAnalyze(analyzeRequest, loginUser);
         return ResultUtils.success(list);
     }
 
