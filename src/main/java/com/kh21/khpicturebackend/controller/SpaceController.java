@@ -13,6 +13,7 @@ import com.kh21.khpicturebackend.constant.UserConstant;
 import com.kh21.khpicturebackend.exception.BusinessException;
 import com.kh21.khpicturebackend.exception.ErrorCode;
 import com.kh21.khpicturebackend.exception.ThrowUtils;
+import com.kh21.khpicturebackend.manager.auth.SpaceUserAuthManager;
 import com.kh21.khpicturebackend.model.dto.picture.*;
 import com.kh21.khpicturebackend.model.dto.space.SpaceAddRequesst;
 import com.kh21.khpicturebackend.model.dto.space.SpaceEditrequest;
@@ -56,6 +57,8 @@ public class SpaceController {
     @Resource
     private UserService userService;
 
+    @Autowired
+    SpaceUserAuthManager spaceUserAuthManager;
 
     /**
      * 删除空间
@@ -145,8 +148,13 @@ public class SpaceController {
         // 查询
         Space space = spaceService.getById(id);
         ThrowUtils.throwIf(space == null, ErrorCode.NOT_FOUND_ERROR);
+        User loginUser = userService.getLoginUser(request);
+
+        List<String> permissionList = spaceUserAuthManager.getPermissionList(space, loginUser);
+        SpaceVO spaceVO = spaceService.getSpaceVO(space);
+        spaceVO.setPermissionList(permissionList);
         // 返回
-        return ResultUtils.success(spaceService.getSpaceVO(space));
+        return ResultUtils.success(spaceVO);
     }
 
     /**

@@ -9,6 +9,7 @@ import com.kh21.khpicturebackend.constant.UserConstant;
 import com.kh21.khpicturebackend.exception.BusinessException;
 import com.kh21.khpicturebackend.exception.ErrorCode;
 import com.kh21.khpicturebackend.exception.ThrowUtils;
+import com.kh21.khpicturebackend.manager.auth.StpKit;
 import com.kh21.khpicturebackend.model.dto.picture.PictureQueryRequest;
 import com.kh21.khpicturebackend.model.dto.user.UserQueryRequest;
 import com.kh21.khpicturebackend.model.entity.User;
@@ -107,6 +108,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         }
         // 4. 记录用户登录状态
         request.getSession().setAttribute(UserConstant.USER_LOGIN_STATE, user);
+        // 记录登录状态到sa-token
+        StpKit.SPACE.login(user.getId());
+        StpKit.SPACE.getSession().set(UserConstant.USER_LOGIN_STATE, user);
+
         return this.getLoginUserVO(user);
     }
 
