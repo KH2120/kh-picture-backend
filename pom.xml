@@ -54,6 +54,11 @@
             <version>5.2.0</version>
         </dependency>
 
+        <!-- websocket -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-websocket</artifactId>
+        </dependency>
 
         <!-- jdk 8+ 引入可选模块 -->
         <dependency>
